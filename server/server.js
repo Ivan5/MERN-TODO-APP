@@ -1,13 +1,12 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const todoRoutes = express.Router();
 const app = express();
 
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const PORT = 4000;
-
+const todoRoutes = express.Router();
 let Todo = require("./todo.model");
 
 app.use(cors());
@@ -50,6 +49,29 @@ todoRoutes.route("/add").post((req, res) => {
     .catch(err => {
       res.status(400).json("adding new todo failed");
     });
+});
+
+todoRoutes.route("/update/:id").put((req, res) => {
+  let id = req.params.id;
+  Todo.findById(id, (err, todo) => {
+    if (!todo) {
+      res.status(404).send("data is not found");
+    } else {
+      todo.todo_description = req.body.todo_description;
+      todo.todo_responsable = req.body.todo_responsable;
+      todo.todo_priority = req.body.todo_priority;
+      todo.todo_completed = req.body.todo_completed;
+
+      todo
+        .save()
+        .then(todo => {
+          res.json("Todo updated");
+        })
+        .catch(err => {
+          res.status(400).send("Update not possible");
+        });
+    }
+  });
 });
 
 app.use("/todos", todoRoutes);
